@@ -2,17 +2,14 @@ import { useState } from 'react';
 
 const steps = [
   {
-    emoji: '🛬',
     title: 'Know your runway',
     desc: 'FinWise tells you one thing — how many days your money will last at your current spending pace.',
   },
   {
-    emoji: '⚡',
     title: 'Log in 3 seconds',
     desc: 'Tap an amount, hit log. No categories, no receipts, no friction. Just the number.',
   },
   {
-    emoji: '🔴',
     title: 'Get warned early',
     desc: 'When your runway drops below 5 days, Crunch Mode kicks in with a plan to stretch what\'s left.',
   },
@@ -48,7 +45,6 @@ export default function Onboarding({ onComplete }) {
           position: 'relative',
           zIndex: 1,
         }}>
-          <div className="animate-float" style={{ fontSize: '2.5rem', marginBottom: '1.25rem' }}>💰</div>
           <h2 style={{ color: '#E8E9ED', fontSize: '1.375rem', fontWeight: '700', marginBottom: '0.5rem' }}>
             How much do you have right now?
           </h2>
@@ -119,7 +115,6 @@ export default function Onboarding({ onComplete }) {
         position: 'relative',
         zIndex: 1,
       }}>
-        <div className="animate-float" style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>{s.emoji}</div>
         <h2 style={{
           color: '#E8E9ED',
           fontSize: '1.5rem',

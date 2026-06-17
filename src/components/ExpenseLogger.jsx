@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
 const quickTags = [
-  { label: 'Chai', emoji: '☕' },
-  { label: 'Auto', emoji: '🛺' },
-  { label: 'Canteen', emoji: '🍛' },
-  { label: 'Print', emoji: '🖨️' },
-  { label: 'Snack', emoji: '🍿' },
-  { label: 'Online', emoji: '📦' },
+  { label: 'Chai' },
+  { label: 'Auto' },
+  { label: 'Canteen' },
+  { label: 'Print' },
+  { label: 'Snack' },
+  { label: 'Online' },
 ];
 
 export default function ExpenseLogger({ onAddExpense }) {
@@ -66,7 +66,7 @@ export default function ExpenseLogger({ onAddExpense }) {
             onClick={() => handleTag(tag)}
             className={`tag ${activeTag === tag.label ? 'tag-active' : ''}`}
           >
-            {tag.emoji} {tag.label}
+            {tag.label}
           </button>
         ))}
       </div>

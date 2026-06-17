@@ -29,8 +29,7 @@ export default function RunwayDisplay({ runwayDays, dailyAvg, balance, confidenc
         textAlign: 'center',
         marginBottom: '0.75rem',
       }}>
-        <div className="animate-float" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🛬</div>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '1rem' }}>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '1rem', marginTop: '0.5rem' }}>
           Log your first expense
         </p>
         <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.8125rem', marginTop: '0.25rem' }}>
