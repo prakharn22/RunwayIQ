@@ -8,7 +8,7 @@
 
 ## The Problem
 
-First-year hostel students in Indian colleges receive a fixed monthly allowance — typically ₹3,000 to ₹8,000. Their spending is dominated by daily micro-transactions (chai, autos, canteen, prints) that are individually trivial but collectively devastating.
+First-year hostel students in Indian colleges receive a fixed monthly allowance: typically ₹3,000 to ₹8,000. Their spending is dominated by daily micro-transactions (chai, autos, canteen, prints) that are individually trivial but collectively devastating.
 
 By the third or fourth week, many students face a predictable crisis: money runs out before the next transfer. The problem isn't that they don't track expenses — it's that no tool answers the only question that matters: **how many days can I survive on what I have left?**
 
@@ -30,7 +30,7 @@ A bank balance of ₹1,200 means nothing without context. FinWise turns that int
 
 **Why no bank integration?** Zero permissions = zero trust barrier. Students are privacy-conscious and skeptical of apps that ask for SMS or bank access. Manual logging is a deliberate trade-off: we sacrifice data completeness for adoption.
 
-**Why no categories?** Every budgeting app forces you to categorize. Students don't think in categories — they think in moments. The quick-tag system captures enough context without the overhead.
+**Why no categories?** Every budgeting app forces you to categorize. Students don't think in categories, they think in moments. The quick-tag system captures enough context without the overhead.
 
 **Why the runway framing instead of budget tracking?** A budget tells you what you *should* spend. A runway tells you what *will* happen if you don't change. The second framing creates urgency without guilt.
 
@@ -42,10 +42,10 @@ A bank balance of ₹1,200 means nothing without context. FinWise turns that int
 
 ## Tech Stack
 
-React + Vite, deployed on Vercel. No backend — all data lives in localStorage. Designed mobile-first (430px max-width).
+React + Vite, deployed on Vercel. No backend, all data lives in localStorage. Designed mobile-first (430px max-width).
 
 ## Author
 
-**Prakhar Nanda** — B.Tech, Biological Sciences and Bioengineering, IIT Kanpur (2026)
+**Prakhar Nanda** | B.Tech, Biological Sciences and Bioengineering, IIT Kanpur (2026)
 
-Built as part of the FinWise project for ProduScope (E-Cell, IIT Guwahati).
+Built as part of a case competition by ProduScope '25 (E-Cell, IIT Guwahati).
