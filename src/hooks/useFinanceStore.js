@@ -1,90 +1,67 @@
 import { useState, useEffect, useMemo } from 'react';
-import { calcRunwayDays } from '../utils/calculations';
+import { calcRunwayDays, getConfidence, getDailyTotals } from '../utils/calculations';
 
-function loadFromStorage(key, fallback) {
+function load(key, fallback) {
   try {
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : fallback;
-  } catch {
-    return fallback;
-  }
+    const s = localStorage.getItem(key);
+    return s ? JSON.parse(s) : fallback;
+  } catch { return fallback; }
 }
-
-function saveToStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
 export function useFinanceStore() {
-  const [balance, setBalance] = useState(() => loadFromStorage('riq_balance', 0));
-  const [expenses, setExpenses] = useState(() => loadFromStorage('riq_expenses', []));
-  const [fixedExpenses, setFixedExpenses] = useState(() => loadFromStorage('riq_fixed', []));
+  const [balance, setBalance] = useState(() => load('riq_balance', 0));
+  const [expenses, setExpenses] = useState(() => load('riq_expenses', []));
+  const [fixedExpenses, setFixedExpenses] = useState(() => load('riq_fixed', []));
+  const [onboarded, setOnboarded] = useState(() => load('riq_onboarded', false));
 
-  useEffect(() => saveToStorage('riq_balance', balance), [balance]);
-  useEffect(() => saveToStorage('riq_expenses', expenses), [expenses]);
-  useEffect(() => saveToStorage('riq_fixed', fixedExpenses), [fixedExpenses]);
+  useEffect(() => save('riq_balance', balance), [balance]);
+  useEffect(() => save('riq_expenses', expenses), [expenses]);
+  useEffect(() => save('riq_fixed', fixedExpenses), [fixedExpenses]);
+  useEffect(() => save('riq_onboarded', onboarded), [onboarded]);
 
   const addExpense = (amount, note = '') => {
-    const expense = {
-      id: Date.now().toString(),
-      amount: Number(amount),
-      note: note.trim(),
-      timestamp: new Date().toISOString(),
-    };
-    setExpenses(prev => [expense, ...prev]);
+    const e = { id: Date.now().toString(), amount: Number(amount), note: note.trim(), timestamp: new Date().toISOString() };
+    setExpenses(prev => [e, ...prev]);
     setBalance(prev => prev - Number(amount));
   };
 
   const deleteExpense = (id) => {
-    const expense = expenses.find(e => e.id === id);
-    if (expense) {
-      setExpenses(prev => prev.filter(e => e.id !== id));
-      setBalance(prev => prev + expense.amount);
+    const e = expenses.find(x => x.id === id);
+    if (e) {
+      setExpenses(prev => prev.filter(x => x.id !== id));
+      setBalance(prev => prev + e.amount);
     }
   };
 
-  const addIncome = (amount, note = '') => {
-    setBalance(prev => prev + Number(amount));
-  };
+  const addIncome = (amount) => setBalance(prev => prev + Number(amount));
 
   const addFixedExpense = (name, amount, dueDate) => {
-    const fixed = {
-      id: Date.now().toString(),
-      name,
-      amount: Number(amount),
-      dueDate,
-    };
-    setFixedExpenses(prev => [...prev, fixed]);
+    setFixedExpenses(prev => [...prev, { id: Date.now().toString(), name, amount: Number(amount), dueDate }]);
   };
 
-  const deleteFixedExpense = (id) => {
-    setFixedExpenses(prev => prev.filter(e => e.id !== id));
+  const deleteFixedExpense = (id) => setFixedExpenses(prev => prev.filter(e => e.id !== id));
+
+  const completeOnboarding = (initialBalance) => {
+    setBalance(Number(initialBalance));
+    setOnboarded(true);
   };
 
   const rollingDailyAvg = useMemo(() => {
     if (expenses.length === 0) return 0;
     const now = new Date();
-    const firstExpense = new Date(expenses[expenses.length - 1].timestamp);
-    const daysSinceFirst = Math.max(1, Math.ceil((now - firstExpense) / (24 * 60 * 60 * 1000)));
-    
-    // Use the shorter of: days since first expense, or 7
-    const windowDays = Math.min(daysSinceFirst, 7);
-    const windowStart = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000);
-    
-    const windowExpenses = expenses.filter(e => new Date(e.timestamp) >= windowStart);
-    const total = windowExpenses.reduce((sum, e) => sum + e.amount, 0);
-    
-    return total / windowDays;
+    const first = new Date(expenses[expenses.length - 1].timestamp);
+    const daysSinceFirst = Math.max(1, Math.ceil((now - first) / (86400000)));
+    const window = Math.min(daysSinceFirst, 7);
+    const start = new Date(now.getTime() - window * 86400000);
+    const total = expenses.filter(e => new Date(e.timestamp) >= start).reduce((s, e) => s + e.amount, 0);
+    return total / window;
   }, [expenses]);
 
   const totalUpcomingFixed = useMemo(() => {
     const now = new Date();
-    const thirtyDaysOut = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    return fixedExpenses
-      .filter(e => {
-        const due = new Date(e.dueDate);
-        return due >= now && due <= thirtyDaysOut;
-      })
-      .reduce((sum, e) => sum + e.amount, 0);
+    const limit = new Date(now.getTime() + 30 * 86400000);
+    return fixedExpenses.filter(e => { const d = new Date(e.dueDate); return d >= now && d <= limit; }).reduce((s, e) => s + e.amount, 0);
   }, [fixedExpenses]);
 
   const runwayDays = useMemo(() => {
@@ -92,40 +69,27 @@ export function useFinanceStore() {
     return calcRunwayDays(balance, totalUpcomingFixed, rollingDailyAvg);
   }, [balance, totalUpcomingFixed, rollingDailyAvg, expenses.length]);
 
+  const confidence = useMemo(() => getConfidence(expenses), [expenses]);
+
+  const dailyTotals = useMemo(() => getDailyTotals(expenses, 7), [expenses]);
+
   const topRepeats = useMemo(() => {
-    const counts = {};
-    expenses.forEach(e => {
-      const key = e.note.toLowerCase() || 'unlabeled';
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([name, count]) => ({ name, count }));
+    const c = {};
+    expenses.forEach(e => { const k = (e.note || 'unlabeled').toLowerCase(); c[k] = (c[k] || 0) + 1; });
+    return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name, count]) => ({ name, count }));
   }, [expenses]);
 
   const resetAll = () => {
-    setBalance(0);
-    setExpenses([]);
-    setFixedExpenses([]);
-    localStorage.removeItem('riq_balance');
-    localStorage.removeItem('riq_expenses');
-    localStorage.removeItem('riq_fixed');
+    setBalance(0); setExpenses([]); setFixedExpenses([]); setOnboarded(false);
+    ['riq_balance', 'riq_expenses', 'riq_fixed', 'riq_onboarded'].forEach(k => localStorage.removeItem(k));
   };
 
   return {
-    balance,
-    expenses,
-    fixedExpenses,
-    rollingDailyAvg,
-    totalUpcomingFixed,
-    runwayDays,
-    topRepeats,
-    addExpense,
-    deleteExpense,
-    addIncome,
-    addFixedExpense,
-    deleteFixedExpense,
-    resetAll,
+    balance, expenses, fixedExpenses, onboarded,
+    rollingDailyAvg, totalUpcomingFixed, runwayDays,
+    confidence, dailyTotals, topRepeats,
+    addExpense, deleteExpense, addIncome,
+    addFixedExpense, deleteFixedExpense,
+    completeOnboarding, resetAll,
   };
 }

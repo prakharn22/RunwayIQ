@@ -1,9 +1,19 @@
 import { useState } from 'react';
 
+const quickTags = [
+  { label: 'Chai', emoji: '☕' },
+  { label: 'Auto', emoji: '🛺' },
+  { label: 'Canteen', emoji: '🍛' },
+  { label: 'Print', emoji: '🖨️' },
+  { label: 'Snack', emoji: '🍿' },
+  { label: 'Online', emoji: '📦' },
+];
+
 export default function ExpenseLogger({ onAddExpense }) {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [flash, setFlash] = useState(false);
+  const [activeTag, setActiveTag] = useState(null);
 
   const handleSubmit = () => {
     const num = parseFloat(amount);
@@ -11,30 +21,32 @@ export default function ExpenseLogger({ onAddExpense }) {
     onAddExpense(num, note);
     setAmount('');
     setNote('');
+    setActiveTag(null);
     setFlash(true);
     setTimeout(() => setFlash(false), 600);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSubmit();
+  const handleTag = (tag) => {
+    if (activeTag === tag.label) {
+      setActiveTag(null);
+      setNote('');
+    } else {
+      setActiveTag(tag.label);
+      setNote(tag.label);
+    }
   };
 
   return (
-    <div style={{
-      background: '#1A1D27',
-      borderRadius: '1rem',
-      padding: '1.25rem',
-      marginBottom: '1rem',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-        <span style={{ color: '#6B7280', fontSize: '1.5rem', fontWeight: '600' }}>₹</span>
+    <div className="glass card-3" style={{ padding: '1.25rem', marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '1.5rem', fontWeight: '600' }}>₹</span>
         <input
           type="number"
           inputMode="decimal"
           placeholder="0"
           value={amount}
           onChange={e => setAmount(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           style={{
             flex: 1,
             background: 'transparent',
@@ -43,44 +55,51 @@ export default function ExpenseLogger({ onAddExpense }) {
             color: '#E8E9ED',
             fontSize: '2rem',
             fontWeight: '700',
-            width: '100%',
           }}
         />
       </div>
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.75rem' }}>
+        {quickTags.map(tag => (
+          <button
+            key={tag.label}
+            onClick={() => handleTag(tag)}
+            className={`tag ${activeTag === tag.label ? 'tag-active' : ''}`}
+          >
+            {tag.emoji} {tag.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
         <input
           type="text"
           placeholder="Note (optional)"
           value={note}
-          onChange={e => setNote(e.target.value)}
-          onKeyDown={handleKeyDown}
-          style={{
-            flex: 1,
-            background: '#0F1117',
-            border: '1px solid #2A2D37',
-            borderRadius: '0.5rem',
-            padding: '0.625rem 0.75rem',
-            color: '#E8E9ED',
-            fontSize: '0.875rem',
-            outline: 'none',
-          }}
+          onChange={e => { setNote(e.target.value); setActiveTag(null); }}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          className="input-glass"
+          style={{ flex: 1 }}
         />
         <button
           onClick={handleSubmit}
           style={{
-            background: flash ? '#34D399' : '#818CF8',
+            background: flash
+              ? 'linear-gradient(135deg, #34D399, #10B981)'
+              : 'linear-gradient(135deg, #818CF8, #6366F1)',
             color: '#fff',
             border: 'none',
-            borderRadius: '0.5rem',
+            borderRadius: '0.625rem',
             padding: '0.625rem 1.25rem',
             fontWeight: '600',
             fontSize: '0.875rem',
             cursor: 'pointer',
-            transition: 'background 0.3s ease',
+            transition: 'all 0.2s ease',
             whiteSpace: 'nowrap',
+            boxShadow: flash ? '0 0 16px rgba(52,211,153,0.3)' : 'none',
           }}
         >
-          {flash ? '✓' : 'Log Expense'}
+          {flash ? '✓' : 'Log'}
         </button>
       </div>
     </div>
